@@ -4,6 +4,7 @@ import dgl
 import tensorflow as tf
 import numpy as np
 from dgl.nn import GraphConv
+import torch
 
 train_pairs, test_pairs, train_labels, test_labels = train_test_split(graph_pairs, labels, test_size=0.2, random_state=42)
 
@@ -28,23 +29,35 @@ model = GIN(input_dim=16, hidden_dim=32, output_dim=1)  # Adjust dimensions as n
 optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
-# Training function
+
+
 def train_step(graphs, labels):
     with tf.GradientTape() as tape:
         predictions = []
         for g in graphs:
             g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
-            g_dgl = dgl.add_self_loop(g_dgl)  # Add self-loops to the graph
-            h = np.ones((g[0].shape[0], 1))  # Placeholder node features
+            g_dgl = dgl.add_self_loop(g_dgl)
+            
+            # Convert features to PyTorch tensor
+            h = torch.ones((g[0].shape[0], 1), dtype=torch.float32)
+
             predictions.append(model(g_dgl, h))
-        predictions = tf.concat(predictions, axis=0)
-        loss = loss_fn(labels, predictions)
+        
+        # Convert labels to PyTorch tensor and adjust predictions
+        labels_tensor = torch.tensor(labels, dtype=torch.float32)
+        predictions = torch.cat(predictions, dim=0)
+
+        loss = loss_fn(labels_tensor, predictions)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss
+
 
 
 # Training loop
 for epoch in range(10):  # Number of epochs
     loss = train_step(train_pairs, train_labels)
     print(f"Epoch {epoch}, Loss: {loss.numpy()}")
+
+tf.convert_to_tensor(labels)
+tf.convert_to_tensor
