@@ -2,6 +2,7 @@ from c import graph_pairs, labels
 from sklearn.model_selection import train_test_split
 import dgl
 import tensorflow as tf
+import numpy as np
 from dgl.nn import GraphConv
 
 train_pairs, test_pairs, train_labels, test_labels = train_test_split(graph_pairs, labels, test_size=0.2, random_state=42)
@@ -32,13 +33,17 @@ def train_step(graphs, labels):
     with tf.GradientTape() as tape:
         predictions = []
         for g in graphs:
-            g_dgl = dgl.DGLGraph(g)  # Convert to DGL graph
-            predictions.append(model(g_dgl, g_dgl.ndata['feat']))
+            # Ensure the adjacency matrix is in the right format
+            # Assuming 'g' is a tuple of two adjacency matrices
+            g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))  # Convert to DGL graph from adjacency matrix
+            h = np.ones((g[0].shape[0], 1))  # Placeholder node features, if none exist
+            predictions.append(model(g_dgl, h))
         predictions = tf.concat(predictions, axis=0)
         loss = loss_fn(labels, predictions)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss
+
 
 # Training loop
 for epoch in range(10):  # Number of epochs
