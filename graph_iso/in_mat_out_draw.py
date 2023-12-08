@@ -95,3 +95,5 @@ adj_mat3 = [[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
 
 draw_graph_from_adj_matrix(adj_mat3)
 
+if __name__ == "__main__":
+    pass

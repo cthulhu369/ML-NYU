@@ -14,6 +14,6 @@ def load_adjacency_matrix(file_path):
         return matrix
 
 # Example usage
-file_path = "iso_m2D_s16.A26"  # Replace with your actual file path
-adj_matrix = load_adjacency_matrix(file_path)
-print(adj_matrix)
+# file_path = "iso_m2D_s16.A26"  # Replace with your actual file path
+# adj_matrix = load_adjacency_matrix(file_path)
+# print(adj_matrix)
