@@ -81,3 +81,33 @@ def evaluate(graphs, labels):
 
 test_accuracy = evaluate(test_pairs, test_labels)
 print(f"Test Accuracy: {test_accuracy}")
+
+
+# Manual inspection
+# Example: Select the first 5 graph pairs from the test set
+sample_graph_pairs = test_pairs[:5]
+sample_labels = test_labels[:5]
+sample_predictions = []
+for g in sample_graph_pairs:
+    g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
+    g_dgl = dgl.add_self_loop(g_dgl)
+    h = torch.ones((g[0].shape[0], 16), dtype=torch.float32)
+    
+    with torch.no_grad():  # Disable gradient computation
+        prediction = model(g_dgl, h)
+        predicted_label = torch.round(torch.sigmoid(prediction)).item()
+        sample_predictions.append(predicted_label)
+
+for i, (pred, label) in enumerate(zip(sample_predictions, sample_labels)):
+    print(f"Graph Pair {i}: Predicted Label - {pred}, Actual Label - {label}")
+
+import networkx as nx
+import matplotlib.pyplot as plt
+def plot_graph(adj_matrix):
+    G = nx.from_numpy_array(adj_matrix)
+    nx.draw(G, with_labels=True)
+    plt.show()
+
+# Plot the first graph pair as an example
+plot_graph(sample_graph_pairs[0][0])
+plot_graph(sample_graph_pairs[0][1])
