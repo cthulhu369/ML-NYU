@@ -63,7 +63,7 @@ adj_matrix = [
 mat2 = random_permute_rows(adj_matrix)
 
 #draw_graph_from_adj_matrix(adj_matrix)
-draw_graph_from_adj_matrix(mat2)
+#draw_graph_from_adj_matrix(mat2)
 
 adj_mat2= [
     [0, 1, 0, 0, 0, 1],
@@ -74,7 +74,7 @@ adj_mat2= [
     [0, 0, 0, 1, 1, 0]
 ]
 
-draw_graph_from_adj_matrix(adj_mat2)
+#draw_graph_from_adj_matrix(adj_mat2)
 
 adj_mat3 = [[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
@@ -93,7 +93,4 @@ adj_mat3 = [[0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
 [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-draw_graph_from_adj_matrix(adj_mat3)
-
-if __name__ == "__main__":
-    pass
+#draw_graph_from_adj_matrix(adj_mat3)

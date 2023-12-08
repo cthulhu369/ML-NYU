@@ -2,7 +2,6 @@ import pandas as pd
 import sys
 import numpy as np
 import os
-
 np.set_printoptions(threshold=sys.maxsize)
 
 def read_word(file):
