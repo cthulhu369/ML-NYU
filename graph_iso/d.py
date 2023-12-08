@@ -109,5 +109,13 @@ def plot_graph(adj_matrix):
     plt.show()
 
 # Plot the first graph pair as an example
+plot_graph(sample_graph_pairs[1][0])
+plot_graph(sample_graph_pairs[1][1])
+
 plot_graph(sample_graph_pairs[0][0])
 plot_graph(sample_graph_pairs[0][1])
+
+plot_graph(graph_pairs[18][1])
+
+
+graph_pairs[1][0].shape
