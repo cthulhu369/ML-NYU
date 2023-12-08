@@ -10,46 +10,56 @@ train_pairs, test_pairs, train_labels, test_labels = train_test_split(graph_pair
 
 
 
-class GIN(tf.keras.Model):
+import dgl
+import torch
+import torch.nn as nn
+from dgl.nn import GraphConv
+
+class GIN(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim):
         super(GIN, self).__init__()
         self.conv1 = GraphConv(input_dim, hidden_dim)
         self.conv2 = GraphConv(hidden_dim, hidden_dim)
-        self.classify = tf.keras.layers.Dense(output_dim)
+        self.classify = nn.Linear(hidden_dim, output_dim)
 
-    def call(self, g, features):
-        x = tf.nn.relu(self.conv1(g, features))
-        x = tf.nn.relu(self.conv2(g, x))
+    def forward(self, g, features):
+        x = torch.relu(self.conv1(g, features))
+        x = torch.relu(self.conv2(g, x))
         with g.local_scope():
             g.ndata['h'] = x
             hg = dgl.mean_nodes(g, 'h')
             return self.classify(hg)
 
-model = GIN(input_dim=16, hidden_dim=32, output_dim=1)  # Adjust dimensions as needed
-optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
-loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+# Initialize model, loss function, and optimizer
+model = GIN(input_dim=16, hidden_dim=32, output_dim=1)
+loss_fn = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-
+# Training step function
 def train_step(graphs, labels):
-    with tf.GradientTape() as tape:
-        predictions = []
-        for g in graphs:
-            g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
-            g_dgl = dgl.add_self_loop(g_dgl)
-            
-            # Update the placeholder features to match the input_dim of the model
-            # Assuming your model's first GraphConv layer expects input_dim=16
-            h = torch.ones((g[0].shape[0], 16), dtype=torch.float32)  # Change 16 to match your input_dim
-
-            predictions.append(model(g_dgl, h))
+    model.train()
+    total_loss = 0
+    for g, label in zip(graphs, labels):
+        g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
+        g_dgl = dgl.add_self_loop(g_dgl)
+        h = torch.ones((g[0].shape[0], 16), dtype=torch.float32)
         
-        labels_tensor = torch.tensor(labels, dtype=torch.float32)
-        predictions = torch.cat(predictions, dim=0)
+        optimizer.zero_grad()
+        prediction = model(g_dgl, h)
+        prediction = prediction.view(-1)  # Reshape to match label dimension
+        label_tensor = torch.tensor([label], dtype=torch.float32)
+        loss = loss_fn(prediction, label_tensor)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    return total_loss / len(graphs)
 
-        loss = loss_fn(labels_tensor, predictions)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    return loss
+
+# Example training loop
+for epoch in range(10):
+    loss = train_step(train_pairs, train_labels)
+    print(f"Epoch {epoch}, Loss: {loss}")
+
 
 
 
