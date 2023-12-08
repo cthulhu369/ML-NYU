@@ -30,7 +30,6 @@ optimizer = tf.keras.optimizers.Adam(learning_rate=0.01)
 loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
 
 
-
 def train_step(graphs, labels):
     with tf.GradientTape() as tape:
         predictions = []
@@ -38,12 +37,12 @@ def train_step(graphs, labels):
             g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
             g_dgl = dgl.add_self_loop(g_dgl)
             
-            # Convert features to PyTorch tensor
-            h = torch.ones((g[0].shape[0], 1), dtype=torch.float32)
+            # Update the placeholder features to match the input_dim of the model
+            # Assuming your model's first GraphConv layer expects input_dim=16
+            h = torch.ones((g[0].shape[0], 16), dtype=torch.float32)  # Change 16 to match your input_dim
 
             predictions.append(model(g_dgl, h))
         
-        # Convert labels to PyTorch tensor and adjust predictions
         labels_tensor = torch.tensor(labels, dtype=torch.float32)
         predictions = torch.cat(predictions, dim=0)
 
@@ -51,6 +50,7 @@ def train_step(graphs, labels):
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss
+
 
 
 
