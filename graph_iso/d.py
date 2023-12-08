@@ -33,10 +33,9 @@ def train_step(graphs, labels):
     with tf.GradientTape() as tape:
         predictions = []
         for g in graphs:
-            # Ensure the adjacency matrix is in the right format
-            # Assuming 'g' is a tuple of two adjacency matrices
-            g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))  # Convert to DGL graph from adjacency matrix
-            h = np.ones((g[0].shape[0], 1))  # Placeholder node features, if none exist
+            g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
+            g_dgl = dgl.add_self_loop(g_dgl)  # Add self-loops to the graph
+            h = np.ones((g[0].shape[0], 1))  # Placeholder node features
             predictions.append(model(g_dgl, h))
         predictions = tf.concat(predictions, axis=0)
         loss = loss_fn(labels, predictions)
