@@ -9,7 +9,6 @@ import torch
 train_pairs, test_pairs, train_labels, test_labels = train_test_split(graph_pairs, labels, test_size=0.2, random_state=42)
 
 
-
 import dgl
 import torch
 import torch.nn as nn
@@ -61,13 +60,24 @@ for epoch in range(10):
     print(f"Epoch {epoch}, Loss: {loss}")
 
 
+# Test step function
+def evaluate(graphs, labels):
+    model.eval()  # Set the model to evaluation mode
+    correct = 0
+    total = 0
 
+    with torch.no_grad():  # Disable gradient computation
+        for g, label in zip(graphs, labels):
+            g_dgl = dgl.graph((np.nonzero(g[0])[0], np.nonzero(g[0])[1]))
+            g_dgl = dgl.add_self_loop(g_dgl)
+            h = torch.ones((g[0].shape[0], 16), dtype=torch.float32)
+            
+            prediction = model(g_dgl, h)
+            predicted_label = torch.round(torch.sigmoid(prediction))
+            correct += (predicted_label == torch.tensor([label], dtype=torch.float32)).sum().item()
+            total += 1
 
+    return correct / total
 
-# Training loop
-for epoch in range(10):  # Number of epochs
-    loss = train_step(train_pairs, train_labels)
-    print(f"Epoch {epoch}, Loss: {loss.numpy()}")
-
-tf.convert_to_tensor(labels)
-tf.convert_to_tensor
+test_accuracy = evaluate(test_pairs, test_labels)
+print(f"Test Accuracy: {test_accuracy}")
